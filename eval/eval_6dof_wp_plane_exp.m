@@ -1,6 +1,7 @@
 %% evaluation of the 6dof forward kinematics problem solution
 % forward kinematics for original configuration
-
+ROBOT = 'GP50';
+robot=robotproperty(ROBOT);
 
 %% robot set up parameters 
 % real theta 
@@ -12,12 +13,14 @@ epos = ForKine(theta_ini, robot.DH, robot.base, robot.cap);
 plane = [-0.4758   -0.0135   -1.0000    1.7601];
 n = normal2hole(plane,anchor_point);
 %% sampling to verify distance currently is positive
-% lmd = 0.0302; % optimal joint bound 
-lmd = 0.0364; % optimized joint bound 
+lmd = 0.0302; % optimal joint bound without normalization
+% lmd = 0.0364; % optimized joint bound with normalization 
 
 sample_num = 10000;
 xpos_samples = zeros(10000,1);
 % sampling a y vector within [-1,1]
+violate = 0;
+min_dist = 999;
 
 for i = 1:sample_num
     ys = -1 + 2*rand(6,1);
@@ -27,6 +30,15 @@ for i = 1:sample_num
     vec = epos - proj;
     dist = dot(n,vec);
     xpos_samples(i) = dist; % y axis wall 
+    
+    % violation check
+    if dist < 0
+        violate = violate + 1;
+    end
+    % update optimality 
+    if dist < min_dist
+        min_dist = dist;
+    end
 end
 
 figure
@@ -37,4 +49,8 @@ yline = 0 * ones(10000,1); % constraint distance to plane > 0
 
 plot(yline,'-','lineWidth',2);
 hold on 
-ylim([-0.5 0.5]);  % distance to plane 
+xlabel('sample number');
+ylabel('safe distance / m'); 
+ylim([-0.05 0.3]);  % distance to plane 
+disp( violate);
+disp( min_dist);

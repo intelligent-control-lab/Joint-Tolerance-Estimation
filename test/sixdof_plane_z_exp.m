@@ -1,40 +1,24 @@
-%% test for the distance to plane 
+%% compute the symbolic forward kinematics 
 clc
 clear
-ROBOT = 'GP50';
-robot=robotproperty(ROBOT);
-%% robot set up parameters 
-% real theta 
-theta_ini = [-0.0452   -1.5247    0.2224   -0.0072    0.1575   -1.9004]';
-% anchor poitn 
-anchor_point = [1.6343;0.0060;1.1336];
-%epos = FK
-epos = ForKine(theta_ini, robot.DH, robot.base, robot.cap);
-plane = [-0.4758   -0.0135   -1.0000    1.7601];
-
-% hyper-params
-seed = 29;
-lb = 0;
-
-%% examination to verify distance currently is positive
-n = normal2hole(plane,anchor_point);
-% get projection point on the plane
-proj = proj_plane(epos, plane);
-vec = epos - proj;
-dist = dot(n,vec);
-disp(['plane ' num2str(5) ' with reference configured robot, distance is ' num2str(dist)]);
-
-%% SOS testing to get the provably safe joint tolerance bound 
 syms lmd y1 y2 y3 y4 y5 y6 real;
 ys = [y1 y2 y3 y4 y5 y6];
+% syms b c d e g h k real;
+ROBOT = 'GP50';
+robot=robotproperty(ROBOT);
+theta_ini = [pi/20   -pi/2    pi/20   pi/20    pi/20   pi/20]';
+seed = 0;
+% no lmd forward kinematics
 c_pre = ForKine_sym_nolmd(theta_ini, robot.DH, robot.base, robot.cap, ys);
-proj = proj_plane(c_pre, plane);
-vec = c_pre - proj;
-dist = dot(n,vec);
-% original requirement is dist > 0 + thres
-% construct the refute set
-thres = 0.02;
-f1 = -dist; % the dist < 0 is empty, which is -dist >= 0 is empty
+
+% hyper-params
+seed = 1;
+lb = 0.0127;
+
+%% testing for the composition 
+% now only focus on the decompose of the original f1 function: forward
+% kinematics
+f1 = c_pre(3)-1.35; % for y axis wall 
 [c,t] = coeffs(f1);
 deci_coe = vpa(c,3);
 
@@ -114,7 +98,7 @@ xref = [0 100000*rand(1,7)]; % lmdb b c d e g h k
 LB = [0, lb*ones(1,7)];
 UB = [0.1, inf, inf, inf, inf, inf, inf, inf];
 
-[x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,@(x)nonlcon_hierarchy_fk_normalize(x,Q,Q1,Q2,Q3,Q4,Q5,Q6,Q_cons),options);
+[x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,@(x)nonlcon_hierarchy_fk(x,Q,Q1,Q2,Q3,Q4,Q5,Q6,Q_cons),options);
 toc
 
 fprintf('the computed bound is: %d', x(1));

@@ -13,16 +13,14 @@ ys_ori = [theta1; theta2];
 xpos = cos(theta1) + cos(theta2);
 ypos = sin(theta1) + sin(theta2);
 
-bias = 2.8; % 2.7321 < 2.8 < 2.8284
-lmd = 0.1145; % seed = 1, w/o normalization
+xdist = 0.09;
+lmd = 0.0670;
 
-% precomputed the positive norm vector 
-anchor_point = [bias;0]; % y = 0, x = bias, due to y = -x + bias
-vec_norm = [-1,-1];
-vec_norm = vec_norm / norm(vec_norm); % positive direction of norm vector pependicular to plane
 
 %% sampling to verify the joint bound approximated forward kinematics
 % precomputed lmd as the joint bound 
+xwall = xpos + xdist;
+
 sample_num = 10000;
 xpos_approx_samples = zeros(sample_num,1);
 violate = 0;
@@ -33,17 +31,14 @@ for i = 1:sample_num
     ys_pert = ys*lmd + ys_ori; % perturbed y vector
     xpos_per = cos(ys_pert(1)) + cos(ys_pert(2));
     ypos_per = sin(ys_pert(1)) + sin(ys_pert(2));
-%     xpos_approx_samples(i) = xpos_per; % x wall 
-    % compute the distance to the plane 
-    epos = [xpos_per;ypos_per];
-    vec_epos = epos - anchor_point;
-    dist = dot(vec_epos,vec_norm);
-    xpos_approx_samples(i) = dist; % y wall 
+    xpos_approx_samples(i) = xpos_per; % x wall 
+%     xpos_approx_samples(i) = ypos_per; % y wall 
     % violation check
-    if dist < 0
+    if xpos_per > xwall
         violate = violate + 1;
     end
     % update optimality 
+    dist = xwall - xpos_per;
     if dist < min_dist
         min_dist = dist;
     end
@@ -53,14 +48,16 @@ figure
 plot(xpos_approx_samples,'.');
 hold on 
 % plot the solidline to demonstrate 1.8
-% yline = xwall * ones(sample_num,1); % x wall
-yline = 0 * ones(sample_num,1); % x wall
+yline = xwall * ones(sample_num,1); % x wall
+% yline = ywall * ones(sample_num,1); % x wall
 plot(yline,'-','lineWidth',2);
 hold on 
 % limitation 
 xlabel('sample number');
-ylabel('safe distance / m'); 
-ylim([0-0.05, 0 + 0.15]); % x wall 
+ylabel('x coordinate / m');
+% ylabel('y coordinate / m');
+ylim([xwall-0.2 xwall + 0.1]); % x wall 
+% ylim([ywall-0.15, ywall + 0.1]); % y wall 
 % disp(max(xpos_approx_samples));
 disp( violate);
 disp( min_dist);

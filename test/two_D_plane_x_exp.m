@@ -8,15 +8,15 @@ nlink = 2;
 % robot configurations
 theta1 = pi/3;
 theta2 = pi/6;
+xdist = 0.09;
+ydist = 0.05;
 
 % forward kinematics 
 xpos = cos(theta1) + cos(theta2);
 ypos = sin(theta1) + sin(theta2);
-
-% arbitrary wall: y <= x + bias
-% max_b = 2*(sqrt(2)/2  + sqrt(2)/2); % 2.8284
-% min_b = xpos + ypos; % 2.7321
-bias = 2.8; % 2.7321 < 2.8 < 2.8284
+xwall = xpos + xdist;
+ywall = ypos + ydist;
+% xwall = 1.4;
 
 %% automatic decomposition tool 
 % Y vector = [1 y1 y2];
@@ -26,8 +26,8 @@ yfk = sinsym(theta1, y1) + sinsym(theta2, y2);
 
 % refute set polynomials
 % construct the coefficient and monomoials
-% f1 = xfk - xwall;
-f1 = xfk + yfk - bias;
+f1 = xfk - xwall;
+% f1 = yfk - ywall;
 [c,t] = coeffs(f1);
 deci_coe = vpa(c,3);
 % decompose to Y^T Q Y = f1
@@ -120,9 +120,9 @@ if normalize == 1
     UB = [];
     [x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,@(x)nonlcon_hierarchy_2D_normalize(x,Q,Q1,Q2,Q_cons),options);
 end
-fprintf('the computed bound is: %d', x(1));
 
 toc
+fprintf('the computed bound is: %d', x(1));
 
 function c = cossym(t, y)
     c = cos(t)*(1 - y^2/2) - sin(t)*y;
