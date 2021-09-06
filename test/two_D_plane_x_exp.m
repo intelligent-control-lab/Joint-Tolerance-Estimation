@@ -14,9 +14,9 @@ ydist = 0.05;
 % forward kinematics 
 xpos = cos(theta1) + cos(theta2);
 ypos = sin(theta1) + sin(theta2);
-xwall = xpos + xdist;
-ywall = ypos + ydist;
-% xwall = 1.4;
+% xwall = xpos + xdist;
+% ywall = ypos + ydist;
+xwall = 1.6;
 
 %% automatic decomposition tool 
 % Y vector = [1 y1 y2];

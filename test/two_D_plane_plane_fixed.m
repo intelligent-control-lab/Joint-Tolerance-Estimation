@@ -1,4 +1,4 @@
-function [lmd, min_dist, violate_rate, xwall]=two_D_plane_plane_exp(wall_dist, ys_ori)
+function [lmd, min_dist, violate_rate, xwall]=two_D_plane_plane_fixed(wall_dist, ys_ori)
 %% the 2D plane with 2D link experiments
 
 % define the auxiliary variables 
@@ -21,43 +21,18 @@ bias = 2.8; % 2.7321 < 2.8 < 2.8284
 % wall_dist=0.2;
 xwall = xpos + wall_dist;
 
-%% numerically compute the max delta
-max_lmd=0.1;
-a1 =-sin(theta1);
-a2 =-sin(theta2);
-b1 = cos(theta1);
-b2 = cos(theta2);
-delta=@(x)(a1*(sin(x(1))-x(1))+b1*(cos(x(1))-1+0.5*x(1)^2)...
-          +a2*(sin(x(2))-x(2))+b2*(cos(x(2))-1+0.5*x(2)^2));
-
-options = optimoptions('fmincon','Display','iter','Algorithm','sqp','MaxFunctionEvaluations',4e3);
-obj = @(x)-delta(x);
-
-A = [];
-b = [];
-LB = [-max_lmd,-max_lmd];
-UB = [ max_lmd, max_lmd];
-
-maxs=zeros(1,20);
-for i=1:20
-    xref = max_lmd*(-1+2*rand(1,2));
-    [x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,[],options);
-    if exitflag>0
-        maxs=delta(x);
-    end
-end
-max_delta=max(maxs);
-disp([max_delta]);
-
 %% automatic decomposition tool 
 % Y vector = [1 y1 y2];
 % forward kinematics within joint toleranc, and without lmd 
 xfk = cossym(theta1, y1) + cossym(theta2, y2);
 yfk = sinsym(theta1, y1) + sinsym(theta2, y2);
 
+b1=cos(theta1);
+b2=cos(theta2);
+
 % refute set polynomials
 % construct the coefficient and monomoials
-f1 = xfk - xwall - max_delta;
+f1 = xfk - xwall;
 % f1 = xfk + yfk - bias;
 [c,t] = coeffs(f1);
 deci_coe = vpa(c,3);
@@ -83,7 +58,7 @@ for num = 1:size(t,2)
     
     % get the row and column and weight, directly using the switch case
     % since it is too simple, Y = [1,y1,y2]
-    disp(order_seq);
+    % disp(order_seq);
     if order_seq(2) == 2
         % y2^2
         Q(3,3) = weight;
@@ -127,30 +102,32 @@ Q_cons = [1 0 0; 0 0 0; 0 0 0];
 
 
 %% SOS formulation to formulate the nonlinear constraints
-options = optimoptions('fmincon','Display','iter','Algorithm','SQP','MaxFunctionEvaluations',4e3);
+options = optimoptions('fmincon','Display','iter','Algorithm','sqp','MaxFunctionEvaluations',4e3);
 % options = optimoptions('fmincon','Display','iter','Algorithm','interior-point');
 obj = @(x)-x(1);
 
-A = [];
-b = [];
+% A = [0 b1 -1 0; 0 b2 0 -1];
+% b = [0; 0];
+A=[];
+b=[];
 normalize = 0; % whether to use the normalization trick
 lmda=zeros(30,1);
 
 for i=1:30
     %rng(1);
-    xref = [0 100*rand(1,3)]; % lmdb b c d
+    xref = [0 100*rand(1,3)]'; % lmdb b c d
     
     % non-normalized formulation
     if normalize == 0
-        LB = [0, 1, 1, 1];
+        LB = [0, 1, 1, 1]';
         UB = [0.5, inf, inf, inf];
         [x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,@(x)nonlcon_hierarchy_2D(x,Q,Q1,Q2,Q_cons),options);
     end
     
     % normalized trick formulation
     if normalize == 1
-        LB = [0, 0, 0, 0];
-        UB = [0.5, inf, inf, inf];
+        LB = [0, 0, 0, 0]';
+        UB = [];
         [x, fval, exitflag,output] = fmincon(obj,xref,[],[],A,b,LB,UB,@(x)nonlcon_hierarchy_2D_normalize(x,Q,Q1,Q2,Q_cons),options);
     end
     
