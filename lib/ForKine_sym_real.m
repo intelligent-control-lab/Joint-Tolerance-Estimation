@@ -1,5 +1,5 @@
 %%
-function [epos, rotate_new] = ForKine_sym_nolmd(x,DH,base,RoCap, ys)
+function [epos, rotate_new] = ForKine_sym_real(x,DH,base,RoCap, ys)
 %% polishing 
 % new 6 to end tool 
 Msix2tool = [0.71906213, -0.49627146, -0.48648154, -0.073912;
@@ -28,9 +28,9 @@ epos = M{i+1}(1:3,4)+base;
 end
 
 function c = cossym(t, y)
-    c = cos(t)*(1 - y^2/2) - sin(t)*y;
+    c = cos(t)*cos(y) - sin(t)*sin(y);
 end
 
 function s = sinsym(t, y)
-    s = sin(t)*(1 - y^2/2) + cos(t)*y;
+    s = sin(t)*cos(y) + cos(t)*sin(y);
 end

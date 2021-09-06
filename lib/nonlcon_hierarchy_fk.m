@@ -40,10 +40,10 @@ Q_sum = -1*(Q_lmd_final + c*Q1 + d*Q2 + e*Q3 + g*Q4 + h*Q5 + k*Q6 + b*Q_cons);
 
 % get the nonlinear constraints for SDP
 c = [];
-for i = 1:64
-    c = [c; -det(Q_sum(1:i,1:i))];
-end
-
+% for i = 1:64
+%     c = [c; -det(Q_sum(1:i,1:i))];
+% end
+c=-eig(Q_sum);
 %% eq
 ceq = [];
 
