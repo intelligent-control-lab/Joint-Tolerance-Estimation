@@ -13,8 +13,9 @@ epos = ForKine(theta_ini, robot.DH, robot.base, robot.cap);
 plane = [-0.4758   -0.0135   -1.0000    1.7601];
 n = normal2hole(plane,anchor_point);
 %% sampling to verify distance currently is positive
-lmd = 0.0302; % optimal joint bound without normalization
+% lmd = 0.0302; % optimal joint bound without normalization
 % lmd = 0.0364; % optimized joint bound with normalization 
+lmd = 0.0316;
 
 sample_num = 10000;
 xpos_samples = zeros(10000,1);

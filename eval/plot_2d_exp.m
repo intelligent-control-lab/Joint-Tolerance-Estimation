@@ -29,12 +29,37 @@ circle(point0(1),point0(2),r)
 circle(point1(1),point1(2),r)
 % circle(point2(1),point2(2),r)
 
+%% plot the extra links 
+% circle(point1(1)+0.3,point1(2));
+% circle(point1(1)+0.6,point1(2));
+% circle(point1(1)+0.9,point1(2));
+
+circle(point2(1),point2(2),r);
+circle(point2(1)+0.1,point2(2),0.005);
+circle(point2(1)+0.15,point2(2),0.005);
+circle(point2(1)+0.2,point2(2),0.005);
+
+point3 = point2;
+point3(1) = point3(1) + 0.3;
+point4 = point3 + [cos(pi/4),sin(pi/4)];
+link3 = [point3 point4];
+plot(link3(1,:),link3(2,:),'-','lineWidth',10,'color',color1);
+circle(point3(1),point3(2),r)
+circle(point4(1),point4(2),r)
+
 % plot the plane 
 bias = 2.8;
-plane1 = [0, bias]';
-plane2 = [bias, 0]';
+% plane1 = [0, bias]';
+% plane2 = [bias, 0]';
+plane1 = [point4(2) + 0.6, 0]';
+plane2 = [point4(2) + 0.6, 2.8]';
 plane = [plane1 plane2];
 plot(plane(1,:),plane(2,:),'-','lineWidth',7,'color',color2);
+
+h=gca; 
+h.XAxis.TickLength = [0 0];
+h.YAxis.TickLength = [0 0];
+set(gca,'XTick',[], 'YTick', [])
 
 axis equal
 

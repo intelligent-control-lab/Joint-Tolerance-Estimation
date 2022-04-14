@@ -1,4 +1,4 @@
-# Joint-Tolerance-Estimation
+# Sum-of-Square-Safety-Optimization
 
 By Weiye Zhao, Suqin He, and Changliu Liu
 

@@ -28,9 +28,10 @@ Q_sum = -1*(Q_lmd_final + c*Q1 + d*Q2 + b*Q_cons);
 % get the nonlinear constraints for SDP
 c = [];
 assert(size(Q_sum,1) == 3 && size(Q_sum,2) == 3)
-for i = 1:3 % 2d plan 2d link case: Q is 3*3 dimension
-    c = [c; -det(Q_sum(1:i,1:i))];
-end
+% for i = 1:3 % 2d plan 2d link case: Q is 3*3 dimension
+%     c = [c; -det(Q_sum(1:i,1:i))];
+% end
+c=-eig(Q_sum);
 
 %% eq
 ceq = [];
